@@ -29,7 +29,7 @@ The Fluxgate Development Board contains four main hardware sub-systems:
 Since magnetic sensors are highly sensitive to power supply noise, a robust voltage regulation and reference system is implemented:
 *   **Main Regulator:** AMS1117-3.3 produces the digital 3.3V supply.
 *   **Negative Rail Generator:** ME7660C charge-pump voltage converter generates a low-noise $-3.3\text{ V}$ rail from the $3.3\text{ V}$ input.
-*   **Precision Analog References:** High-stability AN431 shunt regulators ($20\text{ ppm/°C}$ temp coefficient) generate ultra-stable $+2.5\text{ V}$ and $-2.5\text{ V}$ reference rails for the low-noise op-amps, preventing temperature-induced offset drifts.
+*   **Precision Analog References:** Originally, the op-amps shared the noisy 3.3V digital rail with the microcontrollers, which coupled massive MCU switching ripples into the analog signal path. To achieve extremely low-noise operation, the board was modified to use two **AN431 precision shunt regulators** with a **20 PPM/°C temperature coefficient**. These regulators derive highly stable $+2.5\text{ V}$ and $-2.5\text{ V}$ virtual ground references from the noisy $3.3\text{ V}$ rail, isolated via $10\text{ }\Omega$ current-limiting resistors to prevent temperature-induced offset drifts.
 
 ```
        [ 5V USB Input ]
@@ -50,11 +50,16 @@ To saturate the ferromagnetic core in both directions:
 *   **Drivers:** Two half-bridge drivers (LP1111) are configured to form a full H-bridge.
 *   **Switching Elements:** Low $R_{DS(on)}$ AP2300 or IRFZ44N N-channel MOSFETs.
 *   **Protection:** 1N5400 flyback diodes protect the MOSFETs against massive back-EMF spikes (up to 200A instantaneous rating) when the coil current reverses.
-*   **Bootstrap Optimization:** During initial testing, the high-side bootstrap capacitor was initially selected as $1\text{ nF}$, which restricted the maximum gate-on time, leading to switching failures at lower frequencies. This was optimized and corrected to **$1\text{ µF}$** in the final hardware, allowing stable gate-on periods up to $1.125\text{ ms}$.
+*   **Bootstrap Optimization:** High-side gate drivers require a bootstrap capacitor ($C_{Bst}$) to maintain the gate-to-source voltage ($V_{GS}$) when the high-side MOSFET is active. The minimum bootstrap capacitance is calculated using:
+    $$C_{Bst} = \frac{Q_{gate}}{\Delta V_{Bst}}$$
+    Using the AP2300 gate charge $Q_{gate} = 11\text{ nC}$ and an acceptable voltage ripple $\Delta V_{Bst} = 0.1\text{ V}$, the minimum capacitor required is $110\text{ nF}$.
+    *   Due to a design oversight, a **$1\text{ nF}$** capacitor was initially populated, causing the high-side MOSFETs to fail to switch completely.
+    *   Replacing this with a **$94\text{ nF}$** capacitor allowed switching but triggered rapid charge depletion, causing the gates to turn on and off hundreds of times during a 5ms cycle.
+    *   Restoring this to **$1\text{ µF}$** in the final hardware stabilized the gate, allowing stable gate-on periods up to **$1.125\text{ ms}$** under a $330\text{ }\Omega$ load.
 
 ### 3. Low-Noise Analog Signal Processing
 The induced voltage from the pickup (sensing) coil undergoes analog preprocessing to extract the second harmonic component ($2f$):
-*   **Differential Input Preamp:** Low-noise TP2311 or LT149x op-amps configured as a $1:2$ gain difference amplifier. By reading the sensing coil differentially, **Common-Mode Noise** coupled from the excitation drive is rejected.
+*   **Differential Input Preamp:** Winding coupling experiences massive Common-Mode coupling from the high-voltage excitation drive. To solve this, the sensing coil is connected to a **differential preamplifier with a 1:2 gain** using low-noise TP2311 or LT1492 op-amps. This rejects common-mode excitation noise while increasing the differential sensing signal, bringing the total channel gain to 20.
 *   **Synchronous Demodulator:** An SN74LVC1G3157 analog SPDT switch acts as a phase-sensitive rectifier. It is toggled by the RP2040 at twice the excitation frequency ($2f$), demodulating the second harmonic directly to DC.
 *   **Active Integrator:** A low-pass integrator with an integration bandwidth configured between **159 Hz and 1591 Hz** ($\text{BW} = 1/(2\pi R_f C)$ with $R_f = 100\text{ k}\Omega, C = 10\text{ nF}$).
 *   **Output Filter:** An RC low-pass filter with a cutoff frequency $f_c = 28.42\text{ Hz}$ ($C = 100\text{ nF}, R = 56\text{ k}\Omega$) filters out the $50\text{ Hz}$ mains grid noise and lingering switching ripples.

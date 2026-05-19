@@ -71,9 +71,9 @@ To replicate and build this high-precision Fluxgate sensor, follow these five st
     *   **Voltage References:** AN431 shunt regulators (2.5V, 20ppm/°C stability)
 
 ### 2. Fluxgate Core & Coil Preparation
-1. **Core Selection:** Use a high-permeability toroidal core. While 6-81 Permalloy (81% Ni, 6% Mo) race-track cores yield the absolute lowest noise, a standard **high-permeability ferrite toroid** (e.g., 7mm ID, 2mm thick, 4.5mm high) provides a robust and easily windable core for prototyping.
-2. **Drive Winding:** Wind the excitation coil uniformly around the toroid using **32 AWG** enameled copper wire.
-3. **Sense Winding:** Wind the sensing coil on top of the drive winding, oriented to capture the flux gate effect effectively while canceling out the direct coupling from the excitation drive.
+1. **Core Selection:** Use a high-permeability **green iron-powder ferrite toroid core** with an **inner diameter of 7 mm, thickness of 2 mm, and height of 4.5 mm**. (While a 6-81 Permalloy racetrack core with $100\text{ µm}$ laminations provides lower noise, a toroidal ferrite core is robust and hand-windable).
+2. **Drive Winding:** Wind the excitation (drive) coil uniformly around the toroid using **32 AWG** enameled copper wire. In the experimental prototype, the completed drive winding exhibited a measured **series resistance of $17.945\text{ }\Omega$** and a **series inductance of $19.686\text{ mH}$**.
+3. **Sense Winding:** Wind the sensing (pick-up) coil on top of the drive winding, orienting the windings to capture the fluxgate effect while canceling direct coupling from the excitation drive.
 
 ![Wound Fluxgate Core on Prototyping Board](Pictures/20230611_021130.jpg)
 *Fig 3: The custom hand-wound toroidal fluxgate core integrated onto the testing board.*
@@ -107,6 +107,57 @@ To replicate and build this high-precision Fluxgate sensor, follow these five st
    python pyqtgraph_float_v2x2_yesim.py
    ```
 3. Connect your Pi Pico to the PC via USB. You will see a real-time rolling graph of the 24-bit sampled magnetic field data representing the external field.
+
+---
+
+## 📡 Digital Signal Processing (DSP) & Digital Lock-In Mode
+
+During the final experimental testing phase of this project, the analog op-amps in the physical synchronous demodulation circuit were found to be defective or counterfeit, preventing analog phase detection from working out of the box. To solve this, the project utilized a highly robust **Digital Signal Processing (DSP)** pipeline to bypass the analog demodulator entirely.
+
+### Bypassing the Analog Demodulator
+1. The analog SPDT switch (SN74LVC1G3157) was disabled (tied to a static ground state via the MCU).
+2. The active low-noise op-amps were configured as a simple differential preamplifier.
+3. The raw, high-speed AC signal (which contains the even and odd harmonics) was fed directly into the **MSP430's 24-bit Sigma-Delta ADC**.
+4. The raw, un-demodulated samples were digitized at ~16.5 kSps and streamed to the PC via the RP2040 UART/USB bridge.
+
+### Two Host-Side Digital Processing Implementations
+Your software repository implements two distinct mathematical approaches on the host PC to extract the external magnetic field from this raw stream:
+
+1. **Frequency-Domain Demodulation (Real-Time FFT):**
+   * *File:* **[`pyqtgraph_float_v2x2_yesim.py`](file:///c:/Users/ASUS/Desktop/Fluxgate/Fluxgate-Project-Files/Software/Python_GUI_Demo/pyqtgraph_float_v2x2_yesim.py)**
+   * *Method:* Computes a high-performance **Fast Fourier Transform (FFT)** on blocks of 8192 raw samples using Scipy:
+     ```python
+     Yf0 = fft(ch0)
+     ```
+   * *Result:* The GUI displays the real-time frequency spectrum. By measuring the amplitude peak of the **second harmonic ($2f$ at 25 kHz)** in the frequency domain, the software calculates the precise external magnetic field intensity, completely replacing the physical analog lock-in filters!
+
+2. **Time-Domain Smoothing (Moving Average Convolution):**
+   * *Files:* **[`udp_plot_pyqt.py`](file:///c:/Users/ASUS/Desktop/Fluxgate/Fluxgate-Project-Files/Software/Python_GUI_Demo/udp_plot_pyqt.py)** and **[`udp_plot_pyqt_2.py`](file:///c:/Users/ASUS/Desktop/Fluxgate/Fluxgate-Project-Files/Software/Python_GUI_Demo/udp_plot_pyqt_2.py)**
+   * *Method:* Unpacks the high-speed telemetry and applies a real-time **Moving Average Filter** using NumPy convolution across a 1000-sample window:
+     ```python
+     filtered_data = np.convolve(data, weights, mode='valid')
+     ```
+   * *Result:* Smooths out the excitation switching ripples and transient spikes, feeding a clean time-domain signal to the graphical compass needle interface to dynamically show the core's magnetic orientation.
+
+---
+
+## 🛠️ Hardware Debugging & Engineering Solutions
+
+During the assembly and testing phase, two critical engineering challenges arose and were systematically resolved:
+
+### 1. The H-Bridge Bootstrap Capacitor & Duty Cycle Adaptation
+*   **The Issue:** High-side gate drivers require a bootstrap capacitor ($C_{Bst}$) to maintain the gate-to-source voltage ($V_{GS}$) when the high-side MOSFET turns on. By design guidelines, the minimum bootstrap capacitance is:
+    $$C_{Bst} = \frac{Q_{gate}}{\Delta V_{Bst}}$$
+    Using the AP2300 gate charge $Q_{gate} = 11\text{ nC}$ and an acceptable voltage ripple $\Delta V_{Bst} = 0.1\text{ V}$, the minimum capacitor required is $110\text{ nF}$. Due to a design oversight, a **$1\text{ nF}$** capacitor was initially populated. This capacitor discharged instantly, causing the high-side gate drivers to drop out immediately.
+*   **The Fix:** Populating a **$1\text{ µF}$** capacitor resolved the gate-dropout issue. However, experimental tests under a $330\text{ }\Omega$ load revealed that the high-side gate could remain continuously open for a maximum of **$1.125\text{ ms}$** before the bootstrap charge depleted.
+*   **PWM Adaptation:** To prevent the high-side gate from collapsing during lower frequencies, the RP2040 firmware was adapted to emit a highly optimized PWM excitation pattern. Instead of a basic symmetrical square wave, the drive cycle was structured as:
+    *   **$0.8\text{ ms}$ Positive Drive Phase** (containing high-speed $80\text{ µs}$ pulses with $40\text{ µs}$ dead-times).
+    *   **$0.4\text{ ms}$ Neutral Phase** (H-bridge disabled, allowing the bootstrap capacitors to fully recharge).
+    *   **$0.8\text{ ms}$ Negative Drive Phase** (H-bridge reversed).
+
+### 2. Defective Analog Op-Amps & DSP Bypass
+*   **The Issue:** During board validation, short-circuiting the sensing coil to ground resulted in the low-noise differential preamplifier and active integrator output locks stuck at a solid **$2.5\text{ V}$** (the virtual ground analog reference voltage). The op-amps (TP2311 or LT1492) failed to respond to any AC or DC input signal changes, leading to the conclusion that the physical components received were defective or counterfeit.
+*   **The Solution:** The analog synchronous SPDT demodulator switch (SN74LVC1G3157) was set to ground mode via the RP2040, transforming the first stage into a simple, highly linear $1:2$ differential preamplifier (total differential gain of 20). The raw, high-speed AC pick-up signal was routed directly into the MSP430's 24-bit Sigma-Delta ADC, and the entire lock-in and filtering cascade was bypassed in hardware and reconstructed in real-time software on the host PC.
 
 ---
 
