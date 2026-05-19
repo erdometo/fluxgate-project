@@ -1,0 +1,1 @@
+cmd='C:/Program Files/Msys2/mingw64/bin/cmake.exe;-DCMAKE_MAKE_PROGRAM:FILEPATH=C:/PROGRA~1/Msys2/mingw64/bin/ninja.exe;-GNinja;-C<TMP_DIR>/PioasmBuild-cache-$<CONFIG>.cmake;-S;<SOURCE_DIR><SOURCE_SUBDIR>;-B;<BINARY_DIR>'

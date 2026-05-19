@@ -1,0 +1,49 @@
+# Main Documentation (Ignored as requested)
+Docs/Fluxgate-Sensor-Design.pdf
+
+# KiCad intermediate and backup files
+**/_autosave-*
+**/*-backups/
+**/fp-info-cache
+**/*.kicad_prl
+**/*.sch-bak
+**/freerouting.bin
+**/freerouting.dsn
+**/temp-freerouting.dsn
+
+# IAR Embedded Workbench files
+**/Debug/
+**/settings/
+**/*.dep
+**/*.ewd
+**/BrowseInfo/
+
+# Code Composer Studio (CCS) files
+**/.launches/
+**/.settings/
+**/Include/
+**/Source/
+**/*.ccsproject
+**/*.cproject
+**/*.project
+
+# LTSpice simulation outputs
+**/*.log
+**/*.raw
+**/*.op.raw
+**/*.fft
+**/*.plt
+
+# Python files
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.pytest_cache/
+**/.venv/
+**/venv/
+
+# Matlab/Simulink files
+**/slprj/
+**/*.slxc
+**/*.asv

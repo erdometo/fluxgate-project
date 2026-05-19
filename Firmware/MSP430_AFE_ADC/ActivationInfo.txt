@@ -1,0 +1,15 @@
+# Offline activation file
+license_number:9596-066-690-6455
+installed_features:430.EW.COMPILER,1.13;430.EW.CSTAT,1.13;430.EW.DEBUGGER,1.13;430.EW.GEN18,1.00;430.EW.LIBSRC,1.13;430.EW.LINKER,1.13;430.EW.MISRAC,1.13
+lock_ip:*1SSA954CXP4K6QT
+lock_mac:*1ZPUY3KR8W49LRM
+lock_disk:*1VHM4GBK9BVHSDA
+lock_uuid:*1JEWQSFK33BQLM8
+lock_uuid_host:*1RXG8ZB6ZBBRYAS
+lock_uuid_mac:*16VKXQKKS7ZXFHT
+lock_mac_host:*1MPWNY9WBN99CKN
+lock_hdd:*1Y9TNXQVNG3APES
+lock_cpu_mac:*19ALKQ8WQM3AXKH
+lock_cpu_host:*17VVTH4WZCV4RG7
+virtual:false
+# Offline activation
