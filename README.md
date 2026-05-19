@@ -10,6 +10,15 @@ Developed as a senior capstone engineering project at **Karadeniz Technical Univ
 
 The Fluxgate sensor system is designed around a dual-MCU architecture consisting of an **RP2040** (master controller and driver) and an **MSP430AFE253** (24-bit Sigma-Delta ADC data acquisition).
 
+![System Schematic](Pictures/şematik.svg)
+*Fig 1: Full system schematic diagram detailing all MCU pinouts, power distribution, and analog filters.*
+
+<p align="center">
+  <img src="Pictures/pcb.png" width="48%" alt="PCB Design Render" />
+  <img src="Pictures/gelen pcb.jpg" width="48%" alt="Assembled Hardware Prototype" />
+</p>
+*Fig 2: KiCad PCB 3D layout render (left) and the fully assembled physical testing board (right).*
+
 ```mermaid
 graph TD
     PC[Computer PyQt GUI / Matlab] <-->|USB virtual COM / UDP Wifi| Pico[Raspberry Pi Pico RP2040]
@@ -65,6 +74,9 @@ To replicate and build this high-precision Fluxgate sensor, follow these five st
 1. **Core Selection:** Use a high-permeability toroidal core. While 6-81 Permalloy (81% Ni, 6% Mo) race-track cores yield the absolute lowest noise, a standard **high-permeability ferrite toroid** (e.g., 7mm ID, 2mm thick, 4.5mm high) provides a robust and easily windable core for prototyping.
 2. **Drive Winding:** Wind the excitation coil uniformly around the toroid using **32 AWG** enameled copper wire.
 3. **Sense Winding:** Wind the sensing coil on top of the drive winding, oriented to capture the flux gate effect effectively while canceling out the direct coupling from the excitation drive.
+
+![Wound Fluxgate Core on Prototyping Board](Pictures/20230611_021130.jpg)
+*Fig 3: The custom hand-wound toroidal fluxgate core integrated onto the testing board.*
 
 ### 3. Simulation & Validation
 1. Open **[`Simulations/LTSpice/`](file:///c:/Users/ASUS/Desktop/Fluxgate/Fluxgate-Project-Files/Simulations)**.

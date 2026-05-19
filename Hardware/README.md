@@ -2,6 +2,15 @@
 
 This folder contains the KiCad schematics and PCB layout files for the Fluxgate Sensor Development and Testing Board. The hardware combines the master controller, excitation power electronics, high-speed 24-bit ADC, and a low-noise analog signal processing path into a single 150mm x 100mm PCB.
 
+![Full Circuit Schematic](../Pictures/şematik.svg)
+*Fig 1: Complete circuit schematic for the Fluxgate Development Board (open-source).*
+
+<p align="center">
+  <img src="../Pictures/pcb.png" width="48%" alt="KiCad 3D Layout" />
+  <img src="../Pictures/gelen pcb.jpg" width="48%" alt="Manufactured PCB Board" />
+</p>
+*Fig 2: KiCad board layout 3D render (left) and the actual manufactured PCB received from JLCPCB (right).*
+
 ---
 
 ## 📁 Directory Directory

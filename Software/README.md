@@ -8,7 +8,8 @@ This directory contains the Python-based real-time graphical user interfaces (GU
 
 *   🐍 **[`compass.py`](file:///c:/Users/ASUS/Desktop/Fluxgate/Fluxgate-Project-Files/Software/Python_GUI_Demo/compass.py)**: Python client that maps the parsed magnetic field intensity to a graphical rotating compass needle (`needle.png` and `dial.png`).
 *   🐍 **[`pyqtgraph_float_v2x2_yesim.py`](file:///c:/Users/ASUS/Desktop/Fluxgate/Fluxgate-Project-Files/Software/Python_GUI_Demo/pyqtgraph_float_v2x2_yesim.py)**: Real-time, multi-channel oscilloscope client built using **PyQtGraph** for rendering the high-speed (16.5 kSps) 24-bit ADC data.
-*   🐍 **[`udp_plot_pyqt_2.py`](file:///c:/Users/ASUS/Desktop/Fluxgate/Fluxgate-Project-Files/Software/Python_GUI_Demo/udp_plot_pyqt_2.py)**: Networked plotting client designed to bind to a local UDP socket and visualize wireless telemetry streamed over Wi-Fi by the RP2040.
+*   🐍 **[`udp_plot_pyqt.py`](file:///c:/Users/ASUS/Desktop/Fluxgate/Fluxgate-Project-Files/Software/Python_GUI_Demo/udp_plot_pyqt.py)**: Original Python plotting script for UDP data streams.
+*   🐍 **[`udp_plot_pyqt_2.py`](file:///c:/Users/ASUS/Desktop/Fluxgate/Fluxgate-Project-Files/Software/Python_GUI_Demo/udp_plot_pyqt_2.py)**: Networked plotting client designed to bind to a local UDP socket and visualize wireless telemetry streamed over Wi-Fi by the RP2040 (updated version).
 *   🐍 **[`fluxgateDB.py`](file:///c:/Users/ASUS/Desktop/Fluxgate/Fluxgate-Project-Files/Software/Python_GUI_Demo/fluxgateDB.py)**: Data logging engine that logs the parsed magnetic readings into a database structure for long-term drift studies.
 *   📊 **[`m1.m`, `m2.m`](file:///c:/Users/ASUS/Desktop/Fluxgate/Fluxgate-Project-Files/Software/Python_GUI_Demo)**: Matlab scripts for importing logged datasets, executing Fast Fourier Transforms (FFT), and computing the signal-to-noise ratio (SNR) and harmonic distortion of the sensor.
 
@@ -56,9 +57,11 @@ pip install PyQt5 pyqtgraph numpy pyserial
 
 ### Running the Wireless UDP Plotter
 1. Ensure the Pico W and your computer are connected to the same local network.
-2. Update the `LOCAL_IP` in `udp_plot_pyqt_2.py` to match your computer's IP address.
+2. Update the `LOCAL_IP` in `udp_plot_pyqt_2.py` or `udp_plot_pyqt.py` to match your computer's IP address.
 3. Start the UDP server script:
    ```bash
    python udp_plot_pyqt_2.py
+   # or
+   python udp_plot_pyqt.py
    ```
 4. Power on the sensor. The data stream will automatically render on the screen.
