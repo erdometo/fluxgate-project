@@ -1,6 +1,9 @@
 # Main Documentation (Ignored as requested)
 Docs/Fluxgate-Sensor-Design.pdf
 
+# Extracted Images (Ignored as they are wrong/incorrect)
+Pictures/extracted/
+
 # KiCad intermediate and backup files
 **/_autosave-*
 **/*-backups/
